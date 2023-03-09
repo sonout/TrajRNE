@@ -1,0 +1,9 @@
+generator/__pycache__/*
+datasets/*
+experiments/cache/*
+models/__pycache__/*
+*.pyc
+*.csv
+*.out
+*.json
+data/*
