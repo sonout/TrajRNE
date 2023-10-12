@@ -8,6 +8,7 @@ from tqdm import tqdm
 import json
 from itertools import chain, combinations
 import torch
+# graph-walker library. For installation, see https://github.com/kerighan/graph-walker
 from _walker import random_walks as _random_walks
 
 from road_network import RoadNetwork
