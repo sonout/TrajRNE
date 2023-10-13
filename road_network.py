@@ -22,6 +22,11 @@ try:
 except ImportError:
     ...
 
+try:
+    import fmm
+    from fmm import STMATCH, FastMapMatchConfig, Network, NetworkGraph, STMATCHConfig
+except ImportError:
+    ...
 
 class RoadNetwork:
     """
@@ -266,3 +271,52 @@ class RoadNetwork:
         data = transform(data)
 
         return data
+
+    def fmm_trajectorie_mapping(
+        self, network_file: str, input_file: str, output_files: str
+    ):
+        """
+        Maps raw trajectory gps data to corresponding road segments on the osmnx graph
+        """
+
+        network = Network(network_file, "fid", "u", "v")
+        graph = NetworkGraph(network)
+
+        stmatch_model = STMATCH(network, graph)
+
+        # ubodt_gen = fmm.UBODTGenAlgorithm(network, graph)
+
+        # ubodt_gen.generate_ubodt("ubodt.txt", 0.03, binary=False, use_omp=True)
+        # ubodt = fmm.UBODT.read_ubodt_csv("ubodt.txt")
+
+        # fmm_model = fmm.FastMapMatch(network, graph, ubodt)
+
+        k = 16
+        gps_error = 0.0005
+        radius = 0.003
+        vmax = 0.0003
+        factor = 1.5
+        stmatch_config = STMATCHConfig(k, radius, gps_error, vmax, factor)
+        # fmm_config = FastMapMatchConfig(k, radius, gps_error)
+
+        input_config = fmm.GPSConfig()
+        input_config.file = input_file
+        input_config.id = "id"
+        input_config.geom = "POLYLINE"
+        input_config.timestamp = "timestamp"
+        print(input_config.to_string())
+
+        result_config = fmm.ResultConfig()
+        result_config.file = output_files
+        result_config.output_config.write_opath = True
+        result_config.output_config.write_ogeom = True
+        result_config.output_config.write_pgeom = True
+        result_config.output_config.write_spdist = True
+        result_config.output_config.write_speed = True
+        result_config.output_config.write_duration = True
+        print(result_config.to_string())
+
+        status = stmatch_model.match_gps_file(
+            input_config, result_config, stmatch_config, use_omp=True
+        )
+        print(status)
